@@ -10,8 +10,8 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = "feedback")
-@EqualsAndHashCode(exclude = "feedback")
+@ToString(exclude = "feedbackList")
+@EqualsAndHashCode(exclude = "feedbackList")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,5 +28,5 @@ public class User {
     private String email;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Feedback> feedback;
+    private List<Feedback> feedbackList;
 }

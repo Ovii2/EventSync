@@ -10,8 +10,8 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = "feedback")
-@EqualsAndHashCode(exclude = "feedback")
+@ToString(exclude = "feedbackList")
+@EqualsAndHashCode(exclude = "feedbackList")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,5 +28,5 @@ public class Event {
     private String description;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Feedback> feedback;
+    private List<Feedback> feedbackList;
 }
