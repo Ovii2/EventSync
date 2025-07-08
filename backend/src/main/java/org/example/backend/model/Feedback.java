@@ -11,8 +11,8 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = "event")
-@EqualsAndHashCode(exclude = "event")
+@ToString(exclude = {"event", "user"})
+@EqualsAndHashCode(exclude = {"event", "user"})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,7 +22,7 @@ public class Feedback {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "creation_date")
+    @Column(name = "creation_date", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "feedback_content", columnDefinition = "TEXT")
@@ -38,4 +38,9 @@ public class Feedback {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

@@ -2,13 +2,12 @@ package org.example.backend.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
+@ToString(exclude = "password")
+@EqualsAndHashCode(exclude = "password")
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequestDTO {
@@ -18,4 +17,7 @@ public class UserRequestDTO {
 
     @Email(message = "Email is not valid")
     private String email;
+
+    @NotBlank(message = "Password is mandatory")
+    private String password;
 }

@@ -1,11 +1,10 @@
-package org.example.backend.dto.user;
+package org.example.backend.dto.summary;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.backend.enums.UserRole;
 
 import java.util.UUID;
 
@@ -14,10 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponseDTO {
+public class FeedbackSummaryResponseDTO {
 
-    private UUID id;
-    private String username;
-    private String email;
-    private UserRole role;
+    private UUID eventId;
+    private Long totalFeedbackCount;
+    private Long positiveCount;
+    private Long neutralCount;
+    private Long negativeCount;
 }
