@@ -1,0 +1,5 @@
+@if (shouldShowErrors()) {
+  @for (err of listOfErrors(); track $index) {
+    <p>{{ err }}</p>
+  }
+}

@@ -1,0 +1,26 @@
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+  <h2>Create an account</h2>
+
+  <div class="form-group">
+    <input maxlength="101" type="text" formControlName="username" placeholder="Enter username"/>
+    <app-form-errors class="error" [fieldName]="'Username'" [control]="registerForm.get('username')"></app-form-errors>
+  </div>
+
+  <div class="form-group">
+    <input maxlength="101" type="email" formControlName="email" placeholder="Enter email"/>
+    <app-form-errors class="error" [fieldName]="'Email'" [control]="registerForm.get('email')"></app-form-errors>
+  </div>
+
+  <div class="form-group">
+    <input maxlength="101" type="password" formControlName="password" placeholder="Enter password"/>
+    <app-form-errors class="error" [fieldName]="'Password'" [control]="registerForm.get('password')"></app-form-errors>
+  </div>
+
+  <div class="form-group">
+    <input maxlength="101" type="password" formControlName="repeatPassword" placeholder="Repeat password"/>
+    <app-form-errors class="error" [fieldName]="'Repeat Password'" [control]="registerForm.get('repeatPassword')"></app-form-errors>
+    <app-form-errors class="error" [fieldName]="'Repeat Password'" [control]="registerForm"></app-form-errors>
+  </div>
+
+  <button type="submit" [disabled]="registerForm.invalid">Submit</button>
+</form>

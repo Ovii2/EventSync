@@ -1,0 +1,43 @@
+<header class="header">
+  <nav class="top-nav">
+    <a class="top-nav-link" routerLink="/home" title="Home"><i class="material-icons home">home</i></a>
+    <ul class="top-nav-list" [class.open]="isMenuOpen">
+      @if (!authService.isLoggedIn()) {
+        <li class="top-nav-item">
+          <a class="top-nav-link"
+             routerLink="/register" routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }"
+             (click)="closeMenu()">Register</a>
+        </li>
+      }
+      @if (!authService.isLoggedIn()) {
+        <li class="top-nav-item">
+          <a class="top-nav-link"
+             routerLink="/login"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Login</a>
+        </li>
+      }
+      @if (authService.isLoggedIn()) {
+        <li class="top-nav-item">
+          <a class="top-nav-link"
+             routerLink="/events"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Events</a>
+        </li>
+      }
+      @if (authService.isLoggedIn()) {
+        <li class="top-nav-item">
+          <a class="top-nav-link"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="onLogout()">Logout</a>
+        </li>
+      }
+
+    </ul>
+    <a class="mobile-menu" href="javascript:void(0)" title="Home" aria-label="Toggle navigation"
+       [attr.aria-expanded]="isMenuOpen" (click)="toggleMenu()">
+      <span class="material-symbols-outlined arrow" [class.rotated]="isMenuOpen">arrow_drop_down</span>
+    </a>
+  </nav>
+</header>

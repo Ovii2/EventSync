@@ -1,0 +1,11 @@
+@if (message) {
+  <div class="toast" [ngClass]="message.type.toLowerCase()" (mouseenter)="onMouseEnter()"
+       (mouseleave)="onMouseLeave()">
+    <div class="toast-aside">
+      <span class="material-icons" aria-hidden="true">{{ getIconName(message.type) }}</span>
+    </div>
+    <span class="toast-text">{{ message.text }} </span>
+    <span class="material-symbols-outlined toast-cancel" (click)="onClose()">close</span>
+  </div>
+}
+

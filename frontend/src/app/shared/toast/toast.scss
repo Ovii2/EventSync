@@ -1,0 +1,69 @@
+@use "colors" as *;
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: max-content;
+  max-width: 90vw;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  color: $white;
+  font-weight: bold;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  animation: fadeInOut 3s ease-in-out;
+
+  &.success {
+    background-color: $status-green;
+  }
+
+  &.error {
+    background-color: $status-red;
+  }
+
+  &.info {
+    background-color: $status-orange;
+  }
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+.toast-aside {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.toast-cancel {
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-left: 2rem;
+
+  &:hover {
+    color: $text-color;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  10%,
+  50% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+}

@@ -63,11 +63,11 @@ public class AiService {
                     }
             );
 
-            SentimentAiResponseDTO top = predictions.getFirst().stream()
+            SentimentAiResponseDTO highestScoringPrediction = predictions.getFirst().stream()
                     .max(Comparator.comparingDouble(SentimentAiResponseDTO::getScore))
                     .orElseThrow();
 
-            return switch (top.getLabel().toLowerCase()) {
+            return switch (highestScoringPrediction.getLabel().toLowerCase()) {
                 case "positive" -> SentimentType.POSITIVE;
                 case "negative" -> SentimentType.NEGATIVE;
                 default -> SentimentType.NEUTRAL;

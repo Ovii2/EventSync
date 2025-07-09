@@ -1,0 +1,15 @@
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+  <h2>Sign in</h2>
+
+  <div class="form-group">
+    <input maxlength="101" type="text" formControlName="username" placeholder="Enter username"/>
+    <app-form-errors class="error" [fieldName]="'Username'" [control]="loginForm.get('username')"></app-form-errors>
+  </div>
+
+  <div class="form-group">
+    <input maxlength="101" type="password" formControlName="password" placeholder="Enter password"/>
+    <app-form-errors class="error" [fieldName]="'Password'" [control]="loginForm.get('password')"></app-form-errors>
+  </div>
+
+  <button type="submit" [disabled]="loginForm.invalid">Submit</button>
+</form>

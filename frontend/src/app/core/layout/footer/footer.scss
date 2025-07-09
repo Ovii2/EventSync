@@ -1,0 +1,17 @@
+@use "colors" as *;
+
+.footer {
+  height: 5em;
+  background: $footer-color-gradient;
+  color: $white;
+  font-weight: bold;
+  letter-spacing: 0.05rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-text {
+  margin-right: 0.2rem;
+}
