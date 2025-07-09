@@ -35,7 +35,7 @@ public class UserService {
         }
 
         User user = userMapper.toEntity(userRequestDTO);
-        user.setRole(UserRole.USER);
+        user.setRole(UserRole.ROLE_USER);
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         userRepository.save(user);
         return userMapper.toResponse(user);

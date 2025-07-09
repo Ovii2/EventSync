@@ -13,8 +13,10 @@ import org.example.backend.model.User;
 import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.FeedbackRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -24,16 +26,21 @@ public class FeedbackService {
     private final EventRepository eventRepository;
     private final FeedbackMapper feedbackMapper;
     private final UserService userService;
+    private final AiService aiService;
 
+    @Transactional
     public FeedbackResponseDTO submitFeedback(UUID eventId, FeedbackRequestDTO feedbackRequestDTO) {
         Event event = checkIfEventExists(eventId);
 
         User user = userService.getCurrentUser()
                 .orElseThrow(() -> new NotFoundException("Authenticated user not found"));
 
+        SentimentType sentiment = aiService.analyzeSentiment(feedbackRequestDTO.getContent()).join();
+
         Feedback feedback = Feedback.builder()
                 .content(feedbackRequestDTO.getContent())
                 .event(event)
+                .sentimentType(sentiment)
                 .user(user)
                 .build();
 
