@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,5 +28,10 @@ public class EventController {
     @GetMapping
     public ResponseEntity<List<EventResponseDTO>> getAllEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
+    }
+
+    @GetMapping("/{eventId}")
+    ResponseEntity<EventResponseDTO> getEventById(@PathVariable UUID eventId) {
+        return ResponseEntity.ok(eventService.getEventById(eventId));
     }
 }

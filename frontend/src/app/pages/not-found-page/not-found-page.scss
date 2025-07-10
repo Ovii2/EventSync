@@ -1,0 +1,24 @@
+@use "colors" as *;
+
+.not-found-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5rem auto;
+  max-width: 80vw;
+  text-align: center;
+}
+
+.not-found-page-title {
+  font-size: 8rem;
+  color: $grey;
+}
+
+.not-found-page-content {
+  color: $text-color;
+}
+
+.not-found-page-link {
+  margin-top: 1rem;
+  display: inline-block;
+}

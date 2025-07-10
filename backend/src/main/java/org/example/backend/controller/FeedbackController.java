@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,5 +29,10 @@ public class FeedbackController {
     @GetMapping("/{eventId}/summary")
     public ResponseEntity<FeedbackSummaryResponseDTO> getEventFeedbackSummary(@PathVariable UUID eventId) {
         return ResponseEntity.ok(feedbackService.getFeedbackSummary(eventId));
+    }
+
+    @GetMapping("/{eventId}/feedback")
+    public ResponseEntity<List<FeedbackResponseDTO>> getFeedbackByEventId(@PathVariable UUID eventId) {
+        return ResponseEntity.ok(feedbackService.getFeedbackByEventId(eventId));
     }
 }

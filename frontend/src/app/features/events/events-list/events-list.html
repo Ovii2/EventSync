@@ -1,0 +1,5 @@
+<div class="events-list">
+  @for (event of events; track event.id) {
+    <app-event-card [event]="event"></app-event-card>
+  }
+</div>

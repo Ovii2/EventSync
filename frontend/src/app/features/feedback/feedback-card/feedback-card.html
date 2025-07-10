@@ -1,0 +1,22 @@
+<div class="feedback-card">
+  <div class="feedback-header">
+    <p class="feedback-content">{{ feedback.content }}</p>
+    @switch (feedback.sentimentType) {
+      @case (SentimentType.PENDING) {
+        <span class="pending">Processing...</span>
+      }
+      @case (SentimentType.POSITIVE) {
+        <span class="material-symbols-outlined positive">sentiment_satisfied</span>
+      }
+      @case (SentimentType.NEGATIVE) {
+        <span class="material-symbols-outlined negative">sentiment_dissatisfied</span>
+      }
+      @case (SentimentType.NEUTRAL) {
+        <span class="material-symbols-outlined neutral">sentiment_neutral</span>
+      }
+    }
+  </div>
+
+  <span class="feedback-card-date">{{ feedback.createdAt | date: 'yyyy-MM-dd HH:mm' }}</span>
+</div>
+

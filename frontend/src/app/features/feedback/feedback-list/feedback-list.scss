@@ -1,0 +1,17 @@
+@use "colors" as *;
+
+.feedback-list {
+  margin: 2rem 0;
+  max-height: 40rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+
+  hr {
+    margin-bottom: 1rem;
+  }
+}
+
+.no-feedback {
+  color: $grey;
+  font-weight: 600;
+}

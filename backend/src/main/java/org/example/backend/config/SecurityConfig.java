@@ -20,7 +20,15 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final CorsConfig corsConfig;
 
-    private static final String[] WHITE_LIST_URL = {"/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/logout", "/error"};
+    private static final String[] WHITE_LIST_URL = {
+            "/api/v1/auth/register",
+            "/api/v1/auth/login",
+            "/api/v1/auth/logout",
+            "/error",
+            "/ws/**",
+            "/info/**",
+            "/sockjs-node/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

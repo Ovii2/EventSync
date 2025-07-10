@@ -1,0 +1,60 @@
+@use "colors" as *;
+
+.event-card {
+  width: clamp(19rem, 45vw, 35rem);
+  height: 11rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -1.5rem;
+}
+
+.feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+
+  .feedback-count {
+    font-weight: bold;
+  }
+}
+
+.event-title {
+  margin: 2rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-description {
+  margin-bottom: 2rem;
+}
+
+.event-date {
+  color: $grey;
+  text-align: right;
+}
+
+@media screen and (max-width: 768px) {
+  .event-tile {
+    max-width: 10rem;
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .event-tile {
+    max-width: 18rem;
+  }
+}
+
