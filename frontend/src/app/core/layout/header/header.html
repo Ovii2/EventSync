@@ -29,6 +29,14 @@
       @if (authService.isLoggedIn()) {
         <li class="top-nav-item">
           <a class="top-nav-link"
+             routerLink="/events/new"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">New event</a>
+        </li>
+      }
+      @if (authService.isLoggedIn()) {
+        <li class="top-nav-item">
+          <a class="top-nav-link"
              routerLinkActive="active"
              [routerLinkActiveOptions]="{ exact: true }" (click)="onLogout()">Logout</a>
         </li>

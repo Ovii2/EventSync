@@ -14,8 +14,9 @@ import lombok.NoArgsConstructor;
 public class EventRequestDTO {
 
     @NotBlank(message = "Title is required")
+    @Size(min = 4, max = 100, message = "Title must be at least {min} and not exceed {max} characters")
     private String title;
 
-    @Size(max = 500, message = "Description must not exceed {max} characters")
+    @Size(min = 4, max = 500, message = "Description must be at least {min} and not exceed {max} characters")
     private String description;
 }

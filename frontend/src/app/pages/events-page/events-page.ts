@@ -6,6 +6,7 @@ import {ToastService} from '../../core/services/toast-service';
 
 @Component({
   selector: 'app-events-page',
+  standalone: true,
   imports: [
     EventsList
   ],

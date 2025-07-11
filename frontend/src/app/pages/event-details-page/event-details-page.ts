@@ -6,6 +6,7 @@ import {FeedbackService} from '../../core/services/feedback-service';
 
 @Component({
   selector: 'app-event-details-page',
+  standalone: true,
   imports: [
     EventDetails
   ],

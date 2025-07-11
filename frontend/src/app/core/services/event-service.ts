@@ -1,8 +1,9 @@
 import {inject, Injectable} from '@angular/core';
 import {environment} from '../../../enviroments/enviroment';
 import {Observable} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Event} from '../models/event';
+import {EventRequest} from '../models/event-request';
 
 
 @Injectable({
@@ -23,5 +24,9 @@ export class EventService {
 
   getEventById(eventId: string | null): Observable<Event> {
     return this.http.get<Event>(`${this._baseUrl}/${eventId}`);
+  }
+
+  createEvent(payload: EventRequest): Observable<HttpResponse<void>> {
+    return this.http.post<void>(`${this._baseUrl}`, payload, {observe: 'response'})
   }
 }
