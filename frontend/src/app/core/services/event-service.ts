@@ -1,9 +1,10 @@
 import {inject, Injectable} from '@angular/core';
 import {environment} from '../../../enviroments/enviroment';
 import {Observable} from 'rxjs';
-import {HttpClient, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Event} from '../models/event';
 import {EventRequest} from '../models/event-request';
+import {PageResponse} from '../models/page-response';
 
 
 @Injectable({
@@ -18,8 +19,13 @@ export class EventService {
 
   private http: HttpClient = inject(HttpClient);
 
-  getAllEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>(`${this._baseUrl}`);
+  getAllEventsPaginated(page: number, size: number, sort: string = 'createdAt,desc'): Observable<PageResponse<Event>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort);
+
+    return this.http.get<PageResponse<Event>>(`${this._baseUrl}`, {params});
   }
 
   getEventById(eventId: string | null): Observable<Event> {

@@ -1,4 +1,19 @@
 <div class="events-page">
   <h1 class="event-page-title">What do you want to do today?</h1>
-  <app-events-list [events]="events"></app-events-list>
+  <div class="events-list-container">
+    @if (events.length === 0) {
+      <p class="no-events">No events yet. Start creating them!</p>
+    } @else {
+      <app-events-list [events]="events"></app-events-list>
+    }
+  </div>
+  <div class="pagination-wrapper">
+    @if (events.length > 0) {
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="handlePageChange($event)">
+      </app-pagination>
+    }
+  </div>
 </div>

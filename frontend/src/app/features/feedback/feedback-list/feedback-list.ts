@@ -19,7 +19,6 @@ export class FeedbackList implements OnInit, OnDestroy {
   @Input() eventId: string | null | undefined = '';
   @Input() feedbackList: Feedback[] = [];
 
-
   private websocketService: WebsocketService = inject(WebsocketService);
   private feedbackService: FeedbackService = inject(FeedbackService);
   private destroy$: Subject<void> = new Subject<void>();

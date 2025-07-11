@@ -3,6 +3,7 @@ package org.example.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.event.EventRequestDTO;
 import org.example.backend.dto.event.EventResponseDTO;
+import org.example.backend.dto.page.PageResponseDTO;
 import org.example.backend.exception.AlreadyExistsException;
 import org.example.backend.exception.NotFoundException;
 import org.example.backend.exception.UserNotAuthenticatedException;
@@ -11,6 +12,8 @@ import org.example.backend.model.Event;
 import org.example.backend.model.User;
 import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.FeedbackRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,8 +48,10 @@ public class EventService {
         return eventMapper.toResponse(event);
     }
 
-    public List<EventResponseDTO> getAllEvents() {
-        return eventRepository.findAllByOrderByCreatedAtDesc().stream()
+    public PageResponseDTO<EventResponseDTO> getAllEvents(Pageable pageable) {
+        Page<Event> eventPage = eventRepository.findAllByOrderByCreatedAtDesc(pageable);
+
+        List<EventResponseDTO> content = eventPage.getContent().stream()
                 .map(event -> {
                     EventResponseDTO dto = eventMapper.toResponse(event);
                     Long count = feedbackRepository.countByEvent(event);
@@ -55,5 +60,15 @@ public class EventService {
                     return dto;
                 })
                 .toList();
+
+        return PageResponseDTO.<EventResponseDTO>builder()
+                .content(content)
+                .page(eventPage.getNumber())
+                .size(eventPage.getSize())
+                .totalElements(eventPage.getTotalElements())
+                .totalPages(eventPage.getTotalPages())
+                .last(eventPage.isLast())
+                .first(eventPage.isFirst())
+                .build();
     }
 }

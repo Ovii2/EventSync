@@ -1,0 +1,7 @@
+<div class="button-container">
+  <button class="page-button" (click)="onFirst()" [disabled]="!canGoToFirst">{{ firstPageText }}</button>
+  <button class="page-button" (click)="onPrevious()" [disabled]="!canGoToPrevious">{{ prevText }}</button>
+  <span class="page-number">{{ currentPage + 1 }} <span>of</span> {{ totalPages }}</span>
+  <button class="page-button" (click)="onNext()" [disabled]="!canGoToNext">{{ nextText }}</button>
+  <button class="page-button" (click)="onLast()" [disabled]="!canGoToLast">{{ lastPageText }}</button>
+</div>

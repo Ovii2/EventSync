@@ -1,0 +1,40 @@
+@use 'colors' as *;
+
+.button-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.page-button {
+  background-color: $dark-navy;
+  color: $white;
+  font-weight: 800;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.page-number {
+  border-radius: 0.3rem;
+  background-color: transparent;
+  padding: 0.3rem 0.6rem;
+
+}
+
+.page-number {
+  font-size: 1.1rem;
+  font-weight: bold;
+}

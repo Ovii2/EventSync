@@ -7,6 +7,7 @@ import {LoginRequest} from '../models/login-request';
 import {LoginResponse} from '../models/login-response';
 import {jwtDecode} from 'jwt-decode';
 import {JwtPayload} from '../models/jwt-payload';
+import {UserRole} from '../models/enums/user-role';
 
 @Injectable({
   providedIn: 'root'
@@ -58,7 +59,7 @@ export class AuthService {
     }
     try {
       const decoded: JwtPayload = jwtDecode(token);
-      return decoded.role?.includes('ROLE_ADMIN');
+      return decoded.role?.includes(UserRole.ROLE_ADMIN);
     } catch (error) {
       throw new Error('Failed to decode token:');
     }
