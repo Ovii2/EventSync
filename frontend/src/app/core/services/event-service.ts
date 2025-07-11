@@ -5,6 +5,7 @@ import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Event} from '../models/event';
 import {EventRequest} from '../models/event-request';
 import {PageResponse} from '../models/page-response';
+import {FeedbackSummary} from '../models/feedback-summary';
 
 
 @Injectable({
@@ -34,5 +35,9 @@ export class EventService {
 
   createEvent(payload: EventRequest): Observable<HttpResponse<void>> {
     return this.http.post<void>(`${this._baseUrl}`, payload, {observe: 'response'})
+  }
+
+  getEventFeedbackSummaryById(eventId: string | null): Observable<FeedbackSummary> {
+    return this.http.get<FeedbackSummary>(`${this._baseUrl}/${eventId}/summary`);
   }
 }

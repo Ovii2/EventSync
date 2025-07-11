@@ -52,7 +52,7 @@ public class FeedbackService {
         return feedbackMapper.toResponse(feedback);
     }
 
-    public FeedbackSummaryResponseDTO getFeedbackSummary(UUID eventId) {
+    public FeedbackSummaryResponseDTO getEventFeedbackSummaryById(UUID eventId) {
         Event event = checkIfEventExists(eventId);
 
         Long positive = feedbackRepository.countByEventAndSentimentType(event, SentimentType.POSITIVE);
@@ -91,5 +91,4 @@ public class FeedbackService {
             messagingTemplate.convertAndSend("/topic/feedback-updates", feedbackMapper.toResponse(feedback));
         });
     }
-
 }

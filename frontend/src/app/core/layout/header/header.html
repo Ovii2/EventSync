@@ -1,6 +1,6 @@
 <header class="header">
   <nav class="top-nav">
-    <a class="top-nav-link" routerLink="/home" title="Home"><i class="material-icons home">home</i></a>
+    <a class="top-nav-link" routerLink="/login" title="Home"><i class="material-icons home">home</i></a>
     <ul class="top-nav-list" [class.open]="isMenuOpen">
       @if (!authService.isLoggedIn()) {
         <li class="top-nav-item">
@@ -15,15 +15,16 @@
           <a class="top-nav-link"
              routerLink="/login"
              routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Login</a>
+             [routerLinkActiveOptions]="{ exact: true }"
+             (click)="closeMenu()">Login</a>
         </li>
       }
       @if (authService.isLoggedIn()) {
         <li class="top-nav-item">
           <a class="top-nav-link"
              routerLink="/events"
-             routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Events</a>
+             [class.active]="isOnEventsListPage()"
+             (click)="closeMenu()">Events</a>
         </li>
       }
       @if (authService.isLoggedIn() && authService.isAdmin()) {
@@ -31,14 +32,16 @@
           <a class="top-nav-link"
              routerLink="/events/new"
              routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">New event</a>
+             [routerLinkActiveOptions]="{ exact: true }"
+             (click)="closeMenu()">New event</a>
         </li>
       }
       @if (authService.isLoggedIn()) {
         <li class="top-nav-item">
           <a class="top-nav-link"
              routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="onLogout()">Logout</a>
+             [routerLinkActiveOptions]="{ exact: true }"
+             (click)="onLogout()">Logout</a>
         </li>
       }
 

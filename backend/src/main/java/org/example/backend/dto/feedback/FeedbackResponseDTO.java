@@ -18,6 +18,7 @@ import java.util.UUID;
 public class FeedbackResponseDTO {
 
     private UUID id;
+    private UUID eventId;
     private String content;
     private LocalDateTime createdAt;
     private SentimentType sentimentType;

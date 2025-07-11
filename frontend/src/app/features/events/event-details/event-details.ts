@@ -4,12 +4,14 @@ import {EventService} from '../../../core/services/event-service';
 import {ActivatedRoute} from '@angular/router';
 import {FeedbackList} from '../../feedback/feedback-list/feedback-list';
 import {FeedbackForm} from '../../feedback/feedback-form/feedback-form';
+import {EventFeedbackSummary} from '../event-feedback-summary/event-feedback-summary';
 
 @Component({
   selector: 'app-event-details',
   imports: [
     FeedbackList,
-    FeedbackForm
+    FeedbackForm,
+    EventFeedbackSummary
   ],
   templateUrl: './event-details.html',
   styleUrl: './event-details.scss'
@@ -18,6 +20,7 @@ export class EventDetails implements OnInit {
 
   @Input() event?: Event;
   @ViewChild('feedbackList') feedbackListComponent!: FeedbackList;
+  @ViewChild('feedbackSummary') feedbackSummaryComponent!: EventFeedbackSummary;
 
   loadingEvent: boolean = true;
   id: string | null = '';
@@ -35,6 +38,7 @@ export class EventDetails implements OnInit {
   onFeedbackAdded(): void {
     if (this.event?.id) {
       this.feedbackListComponent.refreshFeedback();
+      this.feedbackSummaryComponent.refreshSummary();
     }
   }
 

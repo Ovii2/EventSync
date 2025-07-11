@@ -9,27 +9,37 @@ import SockJS from 'sockjs-client';
 })
 export class WebsocketService {
   private stompClient!: Client;
-  public feedbackUpdates$: Subject<Feedback> = new Subject<Feedback>();
+  private isConnected = false;
 
-  public feedbackUpdates: Observable<Feedback> = this.feedbackUpdates$.asObservable();
+  private feedbackUpdatesSubject: Subject<Feedback> = new Subject<Feedback>();
+  public feedbackUpdates$: Observable<Feedback> = this.feedbackUpdatesSubject.asObservable();
 
   connect(): void {
+    if (this.isConnected) {
+      return;
+    }
+
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-      reconnectDelay: 5000
-    });
+      reconnectDelay: 5000,
+      onConnect: (): void => {
+        this.isConnected = true;
 
-    this.stompClient.onConnect = (): void => {
-      this.stompClient.subscribe('/topic/feedback-updates', (message: IMessage): void => {
-        const feedback: Feedback = JSON.parse(message.body);
-        this.feedbackUpdates$.next(feedback);
-      });
-    };
+        this.stompClient.subscribe('/topic/feedback-updates', (message: IMessage): void => {
+          const feedback: Feedback = JSON.parse(message.body);
+          this.feedbackUpdatesSubject.next(feedback);
+        });
+      },
+      onDisconnect: (): void => {
+        this.isConnected = false;
+      }
+    });
 
     this.stompClient.activate();
   }
 
   disconnect(): void {
+    this.isConnected = false;
     void this.stompClient.deactivate();
   }
 }

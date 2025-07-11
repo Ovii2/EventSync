@@ -8,6 +8,7 @@ import {EventCreatePage} from './pages/event-create-page/event-create-page';
 import {redirectIfNotAdminGuard} from './core/guards/redirect-if-not-admin-guard';
 
 export const routes: Routes = [
+  {path: '', component: LoginPage, canActivate: [redirectIfAuthenticatedGuard]},
   {path: 'register', component: RegisterPage, canActivate: [redirectIfAuthenticatedGuard]},
   {path: 'login', component: LoginPage, canActivate: [redirectIfAuthenticatedGuard]},
   {

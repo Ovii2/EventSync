@@ -27,8 +27,8 @@ public class FeedbackController {
     }
 
     @GetMapping("/{eventId}/summary")
-    public ResponseEntity<FeedbackSummaryResponseDTO> getEventFeedbackSummary(@PathVariable UUID eventId) {
-        return ResponseEntity.ok(feedbackService.getFeedbackSummary(eventId));
+    public ResponseEntity<FeedbackSummaryResponseDTO> getEventFeedbackSummaryById(@PathVariable UUID eventId) {
+        return ResponseEntity.ok(feedbackService.getEventFeedbackSummaryById(eventId));
     }
 
     @GetMapping("/{eventId}/feedback")

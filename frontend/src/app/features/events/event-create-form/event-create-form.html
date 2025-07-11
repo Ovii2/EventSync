@@ -2,12 +2,12 @@
   <h2>Create new event</h2>
 
   <div class="form-group">
-    <input maxlength="101" type="text" formControlName="title" placeholder="Enter title"/>
+    <input maxlength="101" type="text" formControlName="title" placeholder="Enter event title"/>
     <app-form-errors class="error" [fieldName]="'Title'" [control]="eventForm.get('title')"></app-form-errors>
   </div>
 
   <div class="form-group">
-    <textarea maxlength="501" formControlName="description" placeholder="Enter description"></textarea>
+    <textarea maxlength="501" formControlName="description" placeholder="Enter event description"></textarea>
     <app-form-errors class="error" [fieldName]="'Description'" [control]="eventForm.get('description')"></app-form-errors>
   </div>
 

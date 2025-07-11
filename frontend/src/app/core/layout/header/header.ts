@@ -42,6 +42,15 @@ export class Header {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
+  isOnEventsListPage(): boolean {
+    const url: string = this.router.url;
+    return url.startsWith('/events') && !url.includes('/events/new');
+  }
+
+  isOnNewEventPage(): boolean {
+    return this.router.url === '/events/new';
+  }
+
   onLogout(): void {
     this.closeMenu();
 
