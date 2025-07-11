@@ -10,7 +10,6 @@ import {Subject, takeUntil} from 'rxjs';
   selector: 'app-feedback-list',
   imports: [
     FeedbackCard,
-    FeedbackForm
   ],
   templateUrl: './feedback-list.html',
   styleUrl: './feedback-list.scss'
@@ -18,17 +17,18 @@ import {Subject, takeUntil} from 'rxjs';
 export class FeedbackList implements OnInit, OnDestroy {
 
   @Input() eventId: string | null | undefined = '';
-  feedbackList: Feedback[] = [];
+  @Input() feedbackList: Feedback[] = [];
 
+
+  private websocketService: WebsocketService = inject(WebsocketService);
   private feedbackService: FeedbackService = inject(FeedbackService);
-  private websocketService = inject(WebsocketService);
-  private destroy$ = new Subject<void>();
+  private destroy$: Subject<void> = new Subject<void>();
 
   ngOnInit(): void {
     if (this.eventId) {
       this.fetchFeedback(this.eventId);
       this.websocketService.connect();
-      this.fetchUpdates();
+      this.fetchSentimentUpdates();
     }
   }
 
@@ -48,7 +48,14 @@ export class FeedbackList implements OnInit, OnDestroy {
     })
   }
 
-  fetchUpdates(): void {
+  refreshFeedback(): void {
+    if (this.eventId) {
+      this.fetchFeedback(this.eventId);
+    }
+  }
+
+
+  fetchSentimentUpdates(): void {
     this.websocketService.feedbackUpdates$
       .pipe(takeUntil(this.destroy$))
       .subscribe(updatedFeedback => {

@@ -1,6 +1,4 @@
 <div class="feedback-list">
-  <hr>
-  <app-feedback-form [eventId]="eventId!" (feedbackAdded)="fetchFeedback(eventId!)"></app-feedback-form>
   @if (feedbackList.length === 0) {
     <p class="no-feedback">No feedback yet. Add one!</p>
   } @else {

@@ -1,6 +1,8 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, Input, OnInit} from '@angular/core';
 import {EventDetails} from '../../features/events/event-details/event-details';
 import {ActivatedRoute} from '@angular/router';
+import {Feedback} from '../../core/models/feedback';
+import {FeedbackService} from '../../core/services/feedback-service';
 
 @Component({
   selector: 'app-event-details-page',

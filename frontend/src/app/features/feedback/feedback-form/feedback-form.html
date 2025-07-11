@@ -5,12 +5,14 @@
       maxlength="101"
       placeholder="Leave your feedback here"
     ></textarea>
+    <button type="submit">Submit</button>
+  </div>
 
     <app-form-errors
       class="error"
       [fieldName]="'Feedback'"
       [control]="feedbackForm.get('text')"
     ></app-form-errors>
-  </div>
-  <button type="submit">Submit</button>
+
+
 </form>

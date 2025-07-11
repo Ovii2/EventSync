@@ -1,13 +1,15 @@
-import {Component, inject, Input, OnInit} from '@angular/core';
+import {Component, inject, Input, OnInit, ViewChild} from '@angular/core';
 import {Event} from '../../../core/models/event';
 import {EventService} from '../../../core/services/event-service';
 import {ActivatedRoute} from '@angular/router';
 import {FeedbackList} from '../../feedback/feedback-list/feedback-list';
+import {FeedbackForm} from '../../feedback/feedback-form/feedback-form';
 
 @Component({
   selector: 'app-event-details',
   imports: [
-    FeedbackList
+    FeedbackList,
+    FeedbackForm
   ],
   templateUrl: './event-details.html',
   styleUrl: './event-details.scss'
@@ -15,17 +17,26 @@ import {FeedbackList} from '../../feedback/feedback-list/feedback-list';
 export class EventDetails implements OnInit {
 
   @Input() event?: Event;
+  @ViewChild('feedbackList') feedbackListComponent!: FeedbackList;
 
   loadingEvent: boolean = true;
   id: string | null = '';
 
-  ngOnInit(): void {
-    this.id = this.activatedRoute.snapshot.paramMap.get('id');
-    this.fetchEventDetails();
-  }
-
   private eventService: EventService = inject(EventService);
   private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    this.id = this.activatedRoute.snapshot.paramMap.get('id');
+    if (this.id) {
+      this.fetchEventDetails();
+    }
+  }
+
+  onFeedbackAdded(): void {
+    if (this.event?.id) {
+      this.feedbackListComponent.refreshFeedback();
+    }
+  }
 
   fetchEventDetails(): void {
     this.loadingEvent = true;

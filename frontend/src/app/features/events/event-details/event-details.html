@@ -1,7 +1,11 @@
 <div class="event-details">
-  <h1 class="event-details-title">{{event?.title}}</h1>
-  <h3 class="event-details-description">{{event?.description}}</h3>
-  @if (event?.id) {
-    <app-feedback-list [eventId]="event!.id"></app-feedback-list>
+  @if (event) {
+    <div class="event-details-header">
+      <h1 class="event-details-title">{{ event.title }}</h1>
+      <h3 class="event-details-description">{{ event.description }}</h3>
+    </div>
+    <hr>
+    <app-feedback-form [eventId]="event.id" (feedbackAdded)="onFeedbackAdded()"></app-feedback-form>
+    <app-feedback-list [eventId]="event.id" #feedbackList></app-feedback-list>
   }
 </div>
