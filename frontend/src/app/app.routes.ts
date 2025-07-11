@@ -5,6 +5,7 @@ import {NotFoundPage} from './pages/not-found-page/not-found-page';
 import {redirectIfAuthenticatedGuard} from './core/guards/redirect-if-authenticated-guard';
 import {redirectIfNotAuthenticatedGuard} from './core/guards/redirect-if-not-authenticated-guard';
 import {EventCreatePage} from './pages/event-create-page/event-create-page';
+import {redirectIfNotAdminGuard} from './core/guards/redirect-if-not-admin-guard';
 
 export const routes: Routes = [
   {path: 'register', component: RegisterPage, canActivate: [redirectIfAuthenticatedGuard]},
@@ -19,6 +20,6 @@ export const routes: Routes = [
     canActivate: [redirectIfNotAuthenticatedGuard],
     loadComponent: () => import('./pages/event-details-page/event-details-page').then(m => m.EventDetailsPage)
   },
-  {path: 'events/new', component: EventCreatePage},
+  {path: 'events/new', component: EventCreatePage, canActivate: [redirectIfNotAdminGuard]},
   {path: '**', component: NotFoundPage},
 ];

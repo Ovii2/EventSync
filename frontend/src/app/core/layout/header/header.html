@@ -26,7 +26,7 @@
              [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Events</a>
         </li>
       }
-      @if (authService.isLoggedIn()) {
+      @if (authService.isLoggedIn() && authService.isAdmin()) {
         <li class="top-nav-item">
           <a class="top-nav-link"
              routerLink="/events/new"

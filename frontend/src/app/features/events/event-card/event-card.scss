@@ -39,6 +39,9 @@
 
 .event-description {
   margin-bottom: 2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .event-date {

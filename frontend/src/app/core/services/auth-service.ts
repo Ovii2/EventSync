@@ -5,6 +5,8 @@ import {Observable} from 'rxjs';
 import {Register} from '../models/register';
 import {LoginRequest} from '../models/login-request';
 import {LoginResponse} from '../models/login-response';
+import {jwtDecode} from 'jwt-decode';
+import {JwtPayload} from '../models/jwt-payload';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +49,19 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  isAdmin(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      return false;
+    }
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      return decoded.role?.includes('ROLE_ADMIN');
+    } catch (error) {
+      throw new Error('Failed to decode token:');
+    }
   }
 
   logout(): void {

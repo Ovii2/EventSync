@@ -6,9 +6,6 @@
       <span class="feedback-count">{{ event.feedbackCount > 99 ? '99+' : event.feedbackCount }}</span>
     </div>
   </div>
-
-  <p class="event-description">
-    {{ event.description.length > 65 ? (event.description | slice:0:65) + '...' : event.description }}
-  </p>
+  <p class="event-description"> {{ event.description  }} </p>
   <p class="event-date">{{ event.createdAt | date : 'yyyy-MM-dd HH:mm' }}</p>
 </div>
