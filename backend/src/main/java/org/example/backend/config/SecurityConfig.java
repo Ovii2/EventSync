@@ -25,6 +25,8 @@ public class SecurityConfig {
             "/api/v1/auth/login",
             "/api/v1/auth/logout",
             "/error",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
             "/ws/**",
             "/info/**",
             "/sockjs-node/**"
