@@ -1,6 +1,7 @@
 package org.example.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.backend.dto.feedback.FeedbackRequestDTO;
 import org.example.backend.dto.feedback.FeedbackResponseDTO;
 import org.example.backend.dto.summary.FeedbackSummaryResponseDTO;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FeedbackService {
@@ -46,7 +48,7 @@ public class FeedbackService {
                 .user(user)
                 .build();
 
-       Feedback saved = feedbackRepository.save(feedback);
+        Feedback saved = feedbackRepository.save(feedback);
 
         analyzeAndUpdateSentimentAsync(saved);
         return feedbackMapper.toResponse(feedback);
@@ -85,10 +87,19 @@ public class FeedbackService {
 
     public void analyzeAndUpdateSentimentAsync(Feedback feedback) {
         CompletableFuture.runAsync(() -> {
-            SentimentType sentiment = aiService.analyzeSentiment(feedback.getContent()).join();
-            feedback.setSentimentType(sentiment);
-            feedbackRepository.save(feedback);
-            messagingTemplate.convertAndSend("/topic/feedback-updates", feedbackMapper.toResponse(feedback));
+            try {
+                log.info("Starting sentiment analysis for feedback ID: {}", feedback.getId());
+
+                SentimentType sentiment = aiService.analyzeSentiment(feedback.getContent()).join();
+                feedback.setSentimentType(sentiment);
+                feedbackRepository.save(feedback);
+
+                log.info("Broadcasting feedback update for ID {} to /topic/feedback-updates", feedback.getId());
+                messagingTemplate.convertAndSend("/topic/feedback-updates", feedbackMapper.toResponse(feedback));
+
+            } catch (Exception e) {
+                log.error("Async sentiment analysis failed for feedback ID {}: {}", feedback.getId(), e.getMessage(), e);
+            }
         });
     }
 }

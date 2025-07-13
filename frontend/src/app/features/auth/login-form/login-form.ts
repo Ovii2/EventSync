@@ -5,6 +5,7 @@ import {Router} from '@angular/router';
 import {AuthService} from '../../../core/services/auth-service';
 import {ToastService} from '../../../core/services/toast-service';
 import {LoginRequest} from '../../../core/models/login-request';
+import {WebsocketService} from '../../../core/services/websocket-service';
 
 @Component({
   selector: 'app-login-form',
@@ -20,6 +21,7 @@ export class LoginForm {
   private router: Router = inject(Router);
   private authService: AuthService = inject(AuthService);
   private toastService: ToastService = inject(ToastService);
+  private websocketService: WebsocketService = inject(WebsocketService);
 
   loginForm: FormGroup = this.fb.group({
     username: ['', [Validators.required]],
@@ -41,6 +43,8 @@ export class LoginForm {
         const token = response.body?.token;
         if (token) {
           this.authService.setToken(token);
+          this.websocketService.disconnect();
+          this.websocketService.connect();
         }
 
         this.toastService.success("Logged in!")

@@ -8,6 +8,7 @@ import {LoginResponse} from '../models/login-response';
 import {jwtDecode} from 'jwt-decode';
 import {JwtPayload} from '../models/jwt-payload';
 import {UserRole} from '../models/enums/user-role';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -16,10 +17,12 @@ export class AuthService {
 
   private readonly _baseUrl: string = `${environment.apiBaseUrl}/auth`;
 
+
   constructor() {
   }
 
   private http: HttpClient = inject(HttpClient);
+  private router: Router = inject(Router);
 
   createUser(payload: Register): Observable<HttpResponse<void>> {
     return this.http.post<void>(`${this._baseUrl}/register`, payload, {observe: 'response'});
@@ -32,6 +35,7 @@ export class AuthService {
   logoutUser(): Observable<HttpResponse<string>> {
     const token = this.getToken();
     if (!token) {
+      this.logout();
       throw new Error('No token available');
     }
 
@@ -41,15 +45,31 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (token && this.isTokenExpired(token)) {
+      this.logout();
+      return null;
+    }
+    return token;
   }
 
   setToken(token: string): void {
     localStorage.setItem('token', token);
   }
 
+  isTokenExpired(token: string): boolean {
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      const currentTime: number = Date.now() / 1000;
+      return decoded.exp < currentTime;
+    } catch (error) {
+      return true;
+    }
+  }
+
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token;
   }
 
   isAdmin(): boolean {
@@ -65,8 +85,9 @@ export class AuthService {
     }
   }
 
-  logout(): void {
+  logout(reason: 'expired' | 'manual' = 'manual'): void {
     localStorage.removeItem('token');
     localStorage.clear();
+    void this.router.navigate(['/login']);
   }
 }
