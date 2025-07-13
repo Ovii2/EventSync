@@ -1,8 +1,10 @@
 # EventSync
 
-**EventSync** is a full-stack event management application built with Angular and Spring Boot. It allows users to register, log in, browse, and book events, while admins can manage events and view participant feedback.
+**EventSync** is a full-stack event management application built with Angular and Spring Boot.
+Users can register, log in, browse events, and submit feedback, while admins can create new events. 
+The application uses AI to analyze feedback sentiment and provide intelligent insights.
 
-*Backend deployed url* `https://eventsync-production.up.railway.app/swagger-ui/index.html`
+**Backend demo:** [Backend API](https://eventsync-production.up.railway.app/swagger-ui/index.html)
 
 ## Features
 
@@ -18,6 +20,7 @@
 
 - **Frontend:** Angular 20, SCSS
 - **Backend:** Java 21, Spring Boot 3+, Spring Security, WebSocket
+- **AI Integration:** Sentiment analysis for feedback processing
 - **Database:** MySQL
 - **Deployment:** Railway (backend)
 
@@ -28,20 +31,47 @@
 
 ## Getting Started
 
-1. Make sure you have installed node.js. (version 22+) If not download it and install.
-2. Download or clone this repository.
-3. Create a local MySQL database. If you’re using Docker, a sample container setup is recommended.
-4. Open `backend` folder with our ide.
-5. In the root project directory you will find `.env.example`
-- Copy this file in the root project directory.
+### Prerequisites
+- Node.js (version 22+)
+- Java 21+
+- MySQL database
+
+1. Download or clone this repository.
+2. Setup database
+- Create a local MySQL database.
+- Or use docker `docker run --name mysql-eventsync -e MYSQL_ROOT_PASSWORD=yourpassword -p 3306:3306 -d mysql:latest`
+- Access container `docker exec -it mysql-eventsync mysql -u root -p`
+- Create database `CREATE DATABASE eventsync`
+3. Setup backend
+- Open `backend` folder with our ide.
+- In the root project directory you will find `.env.example`
+- Copy this file to the root project directory.
 - Rename it `.env`
 - Fill in your database credentials, JWT secret, and any other required values.
-- Launch the backend with your ide or `./mvnw spring-boot:run` or `docker compose up --build`
 
-6. Open frontend folder with your favorite ide. Open terminal and make sure you are in frontend directory.
+```bash
+# Database Configuration
+DB_URL=jdbc:mysql://localhost:3306/eventsync (or other)
+DB_USER=your database login 
+DB_PASSWORD=your database password
+
+# JWT Configuration
+JWT_SECRET=your secret
+JWT_EXPIRATION=your expiration time in ms (example: 86400000)
+
+# API Configuration
+API_KEY=your ai api key
+API_URL=your ai api url
+```
+
+- Launch the backend with your ide or `./mvnw spring-boot:run` or `docker compose up --build`
+- Currently, to become an admin, you need to manually assign the `ROLE_ADMIN` role in the database.
+
+4. Setup frontend
+- Open frontend folder with your favorite ide. Open terminal and make sure you are in `/frontend` directory.
 And type `npm install`
-7. Start the frontend with `ng serve -o` or `docker compose up --build`
-8. If browser is not opened automatically type in url `localhost:4200`
+- Start the frontend with `ng serve -o` or `docker compose up --build`
+- If browser is not opened automatically type in url `localhost:4200`
 
 
 ### Endpoints 
@@ -62,8 +92,8 @@ Base url `localhost:8080/api/v1`
 
 ### Feedback
 
-- GET `/events/{eventId}` - Get event feedback by id
-- POST `/events{eventId}` - Create feedback for event
+- GET `/events/{eventId}/feedback` - Get event feedback by id
+- POST `/events/{eventId}/feedback` - Create feedback for event
 - GET `/events/{eventId}/summary` - Get event summary by id
 
 ## Author
