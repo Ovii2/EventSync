@@ -5,8 +5,11 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -20,6 +23,10 @@ public class SwaggerConfig {
                         .title("Event Sync API")
                         .version("1.0")
                         .description("API documentation with JWT authentication"))
+                .servers(List.of(
+                        new Server().url("https://eventsync-production.up.railway.app").description("Production Server"),
+                        new Server().url("http://localhost:8080").description("Local Development")
+                ))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components().addSecuritySchemes(
                         SECURITY_SCHEME_NAME,
