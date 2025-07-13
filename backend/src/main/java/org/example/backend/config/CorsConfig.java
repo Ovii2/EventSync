@@ -15,7 +15,10 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:4200", "https://event-sync-gold.vercel.app"));
+        config.setAllowedOrigins(List.of("http://localhost:4200",
+                "https://event-sync-gold.vercel.app",
+                "https://eventsync-production.up.railway.app",
+                "https://editor.swagger.io"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
