@@ -88,7 +88,7 @@ Base url `localhost:8080/api/v1`
 
 - GET `/events` - Get all events
 - POST `/events` - Create new event (Admin only)
-- POST `/events/{eventId}` - Get event by id
+- GET `/events/{eventId}` - Get event by id
 
 ### Feedback
 
