@@ -45,8 +45,7 @@ public class UserService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (principal instanceof UserDetails userDetails) {
-            String username = userDetails.getUsername();
-            return userRepository.findUserByUsername(username);
+            return userRepository.findUserByUsername(userDetails.getUsername());
         }
         return Optional.empty();
     }
