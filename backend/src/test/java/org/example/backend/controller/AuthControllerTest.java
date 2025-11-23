@@ -1,6 +1,7 @@
 package org.example.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.backend.dto.login.LoginRequestDTO;
 import org.example.backend.dto.login.LoginResponseDTO;
 import org.example.backend.dto.user.UserRequestDTO;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -51,6 +53,7 @@ class AuthControllerTest {
     private static final String TEST_USERNAME = "Test";
     private static final String TEST_EMAIL = "test@email.com";
     private static final String TEST_PASSWORD = "12345678";
+    private static final String TEST_TOKEN = "test-jwt-token";
     private static final String BASE_URL = "/api/v1/auth";
 
 
@@ -80,11 +83,11 @@ class AuthControllerTest {
 
     LoginResponseDTO buildLoginResponseDTO() {
         return LoginResponseDTO.builder()
-                .token("valid-token")
+                .token(TEST_TOKEN)
                 .build();
     }
 
-    MockHttpServletRequestBuilder buildRequest(String path) {
+    MockHttpServletRequestBuilder buildPostRequest(String path) {
         return MockMvcRequestBuilders.post(path)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON);
@@ -101,7 +104,7 @@ class AuthControllerTest {
         String json = new ObjectMapper().writeValueAsString(requestDTO);
 
         // Act
-        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/register").content(json)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/register").content(json)).andReturn();
         String responseBodyAsString = mvcResult.getResponse().getContentAsString();
         UserResponseDTO createdUser = new ObjectMapper().readValue(responseBodyAsString, UserResponseDTO.class);
 
@@ -126,7 +129,7 @@ class AuthControllerTest {
         String json = new ObjectMapper().writeValueAsString(requestDTO);
 
         // Act
-        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/register").content(json)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/register").content(json)).andReturn();
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -145,7 +148,7 @@ class AuthControllerTest {
         String json = new ObjectMapper().writeValueAsString(requestDTO);
 
         // Act
-        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/register").content(json)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/register").content(json)).andReturn();
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -165,7 +168,7 @@ class AuthControllerTest {
         String json = new ObjectMapper().writeValueAsString(request);
 
         // Act
-        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/login").content(json)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/login").content(json)).andReturn();
         String responseBodyAsString = mvcResult.getResponse().getContentAsString();
         LoginResponseDTO loggedUser = new ObjectMapper().readValue(responseBodyAsString, LoginResponseDTO.class);
 
@@ -188,7 +191,7 @@ class AuthControllerTest {
         String json = new ObjectMapper().writeValueAsString(request);
 
         // Act
-        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/login").content(json)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/login").content(json)).andReturn();
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -207,7 +210,7 @@ class AuthControllerTest {
         String json = new ObjectMapper().writeValueAsString(request);
 
         // Act
-        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/login").content(json)).andReturn();
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/login").content(json)).andReturn();
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -216,4 +219,41 @@ class AuthControllerTest {
         verify(authService, never()).loginUser(any(LoginRequestDTO.class));
     }
 
+    @Order(7)
+    @Test
+    @DisplayName("Logout user with valid token")
+    void testLogout_whenTokenIsValid_returnCorrectStatus() throws Exception {
+        // Arrange
+        String authHeader = "Bearer %s".formatted(TEST_TOKEN);
+        when(authService.logout(any(HttpServletRequest.class))).thenReturn(ResponseEntity.ok("Logout successful"));
+
+        // Act
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/logout").header("Authorization", authHeader)).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+        assertEquals("Logout successful", mvcResult.getResponse().getContentAsString());
+
+        // Verify
+        verify(authService, times(1)).logout(any(HttpServletRequest.class));
+    }
+
+    @Order(8)
+    @Test
+    @DisplayName("Logout fails when Authorization header is missing")
+    void testLogout_whenAuthorizationHeaderIsMissing_returnsBadRequest() throws Exception {
+        // Arrange
+        when(authService.logout(any(HttpServletRequest.class)))
+                .thenReturn(ResponseEntity.badRequest().body("Missing or invalid Authorization header"));
+
+        // Act
+        MvcResult mvcResult = mockMvc.perform(buildPostRequest(BASE_URL + "/logout")).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
+        assertEquals("Missing or invalid Authorization header", mvcResult.getResponse().getContentAsString());
+
+        // Verify
+        verify(authService, times(1)).logout(any(HttpServletRequest.class));
+    }
 }
