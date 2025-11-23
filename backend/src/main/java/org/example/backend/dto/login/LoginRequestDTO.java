@@ -1,5 +1,6 @@
 package org.example.backend.dto.login;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,9 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequestDTO {
 
-    @NotEmpty(message = "Username can't be empty")
+    @NotBlank(message = "Username can't be empty")
     private String username;
 
-    @NotEmpty(message = "Password can't be empty")
+    @NotBlank(message = "Password can't be empty")
     private String password;
 }

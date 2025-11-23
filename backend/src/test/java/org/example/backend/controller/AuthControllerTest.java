@@ -1,6 +1,8 @@
 package org.example.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.backend.dto.login.LoginRequestDTO;
+import org.example.backend.dto.login.LoginResponseDTO;
 import org.example.backend.dto.user.UserRequestDTO;
 import org.example.backend.dto.user.UserResponseDTO;
 import org.example.backend.enums.UserRole;
@@ -66,6 +68,19 @@ class AuthControllerTest {
                 .username(TEST_USERNAME)
                 .email(TEST_EMAIL)
                 .role(UserRole.ROLE_USER)
+                .build();
+    }
+
+    LoginRequestDTO buildLoginRequestDTO() {
+        return LoginRequestDTO.builder()
+                .username(TEST_USERNAME)
+                .password(TEST_PASSWORD)
+                .build();
+    }
+
+    LoginResponseDTO buildLoginResponseDTO() {
+        return LoginResponseDTO.builder()
+                .token("valid-token")
                 .build();
     }
 
@@ -137,6 +152,68 @@ class AuthControllerTest {
 
         // Verify
         verify(userService, never()).createUser(any(UserRequestDTO.class));
+    }
+
+    @Order(4)
+    @Test
+    @DisplayName("Login valid user")
+    void testLoginUser_withValidCredentials_returnsCorrectStatusAndToken() throws Exception {
+        // Arrange
+        LoginRequestDTO request = buildLoginRequestDTO();
+        LoginResponseDTO response = buildLoginResponseDTO();
+        when(authService.loginUser(any(LoginRequestDTO.class))).thenReturn(response);
+        String json = new ObjectMapper().writeValueAsString(request);
+
+        // Act
+        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/login").content(json)).andReturn();
+        String responseBodyAsString = mvcResult.getResponse().getContentAsString();
+        LoginResponseDTO loggedUser = new ObjectMapper().readValue(responseBodyAsString, LoginResponseDTO.class);
+
+        // Assert
+        assertNotNull(loggedUser.getToken());
+        assertEquals(response.getToken(), loggedUser.getToken());
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+
+        // Verify
+        verify(authService, times(1)).loginUser(any(LoginRequestDTO.class));
+    }
+
+    @Order(5)
+    @Test
+    @DisplayName("Login without username")
+    void testLoginUser_withoutUsername_returnsBadRequest() throws Exception {
+        // Arrange
+        LoginRequestDTO request = buildLoginRequestDTO();
+        request.setUsername(" ");
+        String json = new ObjectMapper().writeValueAsString(request);
+
+        // Act
+        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/login").content(json)).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
+
+        // Verify
+        verify(authService, never()).loginUser(any(LoginRequestDTO.class));
+    }
+
+    @Order(6)
+    @Test
+    @DisplayName("Login without password")
+    void testLoginUser_withoutPassword_returnsBadRequest() throws Exception {
+        // Arrange
+        LoginRequestDTO request = buildLoginRequestDTO();
+        request.setPassword(" ");
+        String json = new ObjectMapper().writeValueAsString(request);
+
+        // Act
+        MvcResult mvcResult = mockMvc.perform(buildRequest(BASE_URL + "/login").content(json)).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
+
+        // Verify
+        verify(authService, never()).loginUser(any(LoginRequestDTO.class));
     }
 
 }
