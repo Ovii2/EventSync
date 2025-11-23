@@ -7,12 +7,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
 @EnableAsync
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableWebSocketMessageBroker
 @EnableScheduling
 @SpringBootApplication
 public class BackendApplication {
