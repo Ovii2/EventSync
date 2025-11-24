@@ -10,13 +10,19 @@ import org.example.backend.mapper.EventMapper;
 import org.example.backend.model.Event;
 import org.example.backend.model.User;
 import org.example.backend.repository.EventRepository;
+import org.example.backend.repository.FeedbackRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +45,9 @@ class EventServiceTest {
 
     @Mock
     private EventRepository eventRepository;
+
+    @Mock
+    private FeedbackRepository feedbackRepository;
 
     private static final String TEST_TITLE = "Test title";
     private static final String TEST_DESCRIPTION = "Test description";
@@ -193,6 +202,59 @@ class EventServiceTest {
         // Verify
         verify(eventRepository, times(1)).findById(TEST_ID);
         verify(eventMapper, never()).toResponse(any(Event.class));
+    }
+
+    @Order(6)
+    @Test
+    @DisplayName("Get all events")
+    void testGetAllEvents_whenEventsExists_returnPaginatedResponse() {
+        // Arrange
+        Event savedEvent = setupEvent();
+        List<Event> events = List.of(savedEvent);
+        Pageable page = Pageable.ofSize(1);
+        Page<Event> pageResult = new PageImpl<>(events, page, events.size());
+        EventResponseDTO response = setupEventResponse();
+
+        when(eventMapper.toResponse(savedEvent)).thenReturn(response);
+        when(eventRepository.findAllByOrderByCreatedAtDesc(page)).thenReturn(pageResult);
+        when(feedbackRepository.countByEvent(savedEvent)).thenReturn(5L);
+
+        // Act
+        var result = eventService.getAllEvents(page);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(response.getTitle(), result.getContent().getFirst().getTitle());
+        assertEquals(5L, result.getContent().getFirst().getFeedbackCount());
+        assertEquals(1, result.getTotalElements());
+
+        // Verify
+        verify(eventRepository, times(1)).findAllByOrderByCreatedAtDesc(page);
+        verify(eventMapper, times(1)).toResponse(savedEvent);
+        verify(feedbackRepository, times(1)).countByEvent(savedEvent);
+    }
+
+    @Order(7)
+    @Test
+    @DisplayName("Get all events returns empty page when no events exist")
+    void testGetAllEvents_whenNoEventsExists_returnsEmptyPaginatedResponse() {
+        // Arrange
+        Pageable page = Pageable.ofSize(1);
+        Page<Event> pageResult = new PageImpl<>(Collections.emptyList(), page, 0);
+        when(eventRepository.findAllByOrderByCreatedAtDesc(page)).thenReturn(pageResult);
+
+        // Act
+        var result = eventService.getAllEvents(page);
+
+        // Assert
+        assertEquals(0, result.getContent().size());
+        assertEquals(0, result.getTotalElements());
+
+        // Verify
+        verify(eventRepository, times(1)).findAllByOrderByCreatedAtDesc(page);
+        verify(eventMapper, never()).toResponse(any());
+        verify(feedbackRepository, never()).countByEvent(any());
     }
 
 }
