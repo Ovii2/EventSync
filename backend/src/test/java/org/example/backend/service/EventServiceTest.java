@@ -4,6 +4,7 @@ import org.example.backend.dto.event.EventRequestDTO;
 import org.example.backend.dto.event.EventResponseDTO;
 import org.example.backend.enums.UserRole;
 import org.example.backend.exception.AlreadyExistsException;
+import org.example.backend.exception.NotFoundException;
 import org.example.backend.exception.UserNotAuthenticatedException;
 import org.example.backend.mapper.EventMapper;
 import org.example.backend.model.Event;
@@ -41,6 +42,7 @@ class EventServiceTest {
 
     private static final String TEST_TITLE = "Test title";
     private static final String TEST_DESCRIPTION = "Test description";
+    private static final UUID TEST_ID = UUID.randomUUID();
 
     EventRequestDTO setupEventRequest() {
         return EventRequestDTO.builder()
@@ -51,7 +53,7 @@ class EventServiceTest {
 
     EventResponseDTO setupEventResponse() {
         return EventResponseDTO.builder()
-                .id(UUID.randomUUID())
+                .id(TEST_ID)
                 .title(TEST_TITLE)
                 .description(TEST_DESCRIPTION)
                 .feedbackCount(1L)
@@ -61,7 +63,7 @@ class EventServiceTest {
 
     Event setupEvent() {
         return Event.builder()
-                .id(UUID.randomUUID())
+                .id(TEST_ID)
                 .title(TEST_TITLE)
                 .description(TEST_DESCRIPTION)
                 .createdAt(LocalDateTime.now())
@@ -108,7 +110,7 @@ class EventServiceTest {
         assertEquals(request.getDescription(), event.getDescription());
 
         // Verify
-        verify(eventRepository, times(1)).save(any(Event.class));
+        verify(eventRepository, times(1)).save(savedEvent);
     }
 
     @Order(2)
@@ -148,6 +150,49 @@ class EventServiceTest {
 
         // Verify
         verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Order(4)
+    @Test
+    @DisplayName("Get existing event")
+    void testGetEventById_whenEventExists_returnsEventResponse() {
+        // Arrange
+        Event savedEvent = setupEvent();
+        EventResponseDTO response = setupEventResponse();
+
+        when(eventRepository.findById(TEST_ID)).thenReturn(Optional.of(savedEvent));
+        when(eventMapper.toResponse(savedEvent)).thenReturn(response);
+
+        // Act
+        EventResponseDTO event = eventService.getEventById(TEST_ID);
+
+        // Assert
+        assertNotNull(event);
+        assertEquals(savedEvent.getId(), event.getId());
+        assertEquals(savedEvent.getTitle(), event.getTitle());
+        assertEquals(savedEvent.getDescription(), event.getDescription());
+
+        // Verify
+        verify(eventRepository, times(1)).findById(TEST_ID);
+        verify(eventMapper, times(1)).toResponse(savedEvent);
+    }
+
+    @Order(5)
+    @Test
+    @DisplayName("Get not existing event")
+    void testGetEventById_whenEventDoesNotExist_throwsNotFoundException() {
+        // Arrange
+        when(eventRepository.findById(TEST_ID)).thenReturn(Optional.empty());
+
+        // Act
+        var thrown = assertThrows(NotFoundException.class, () -> eventService.getEventById(TEST_ID));
+
+        // Assert
+        assertEquals("Event not found with ID: %s".formatted(TEST_ID), thrown.getMessage());
+
+        // Verify
+        verify(eventRepository, times(1)).findById(TEST_ID);
+        verify(eventMapper, never()).toResponse(any(Event.class));
     }
 
 }
