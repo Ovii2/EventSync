@@ -5,7 +5,7 @@ import jakarta.servlet.ServletException;
 import org.example.backend.dto.event.EventRequestDTO;
 import org.example.backend.dto.event.EventResponseDTO;
 import org.example.backend.dto.page.PageResponseDTO;
-import org.example.backend.model.Event;
+import org.example.backend.exception.NotFoundException;
 import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.TokenRepository;
 import org.example.backend.service.AuthService;
@@ -15,8 +15,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -91,8 +89,8 @@ class EventControllerTest {
                 .accept(MediaType.APPLICATION_JSON);
     }
 
-    MockHttpServletRequestBuilder setupGetRequest() {
-        return MockMvcRequestBuilders.get(BASE_URL)
+    MockHttpServletRequestBuilder setupGetRequest(String path) {
+        return MockMvcRequestBuilders.get(path)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON);
     }
@@ -159,11 +157,11 @@ class EventControllerTest {
         when(eventService.getAllEvents(any(Pageable.class))).thenReturn(pageResponse);
 
         // Act & Assert
-        mockMvc.perform(setupGetRequest())
+        mockMvc.perform(setupGetRequest(BASE_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content[0].id").value(response.getId().toString()))
-                .andExpect(jsonPath("$.content[0].title").value(response.getTitle().toString()));
+                .andExpect(jsonPath("$.content[0].title").value(response.getTitle()));
 
         // Verify
         verify(eventService, times(1)).getAllEvents(any(Pageable.class));
@@ -186,11 +184,49 @@ class EventControllerTest {
         when(eventService.getAllEvents(any(Pageable.class))).thenReturn(pageResponse);
 
         // Act & Assert
-        mockMvc.perform(setupGetRequest())
+        mockMvc.perform(setupGetRequest(BASE_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
         // Verify
         verify(eventService, times(1)).getAllEvents(any(Pageable.class));
+    }
+
+    @Order(5)
+    @Test
+    @DisplayName("Get existing event")
+    void testGetEventById_whenEventExists_returnsEvent() throws Exception {
+        // Arrange
+        EventResponseDTO response = setupEventResponse();
+
+        when(eventService.getEventById(TEST_ID)).thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest("%s/%s".formatted(BASE_URL, TEST_ID)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(response.getId().toString()))
+                .andExpect(jsonPath("$.title").value(response.getTitle()))
+                .andExpect(jsonPath("$.description").value(response.getDescription()));
+
+        // Verify
+        verify(eventService, times(1)).getEventById(TEST_ID);
+    }
+
+    @Order(6)
+    @Test
+    @DisplayName("Get non existing event")
+    void testGetEventById_whenEventDoesNotExists_returnsNotFound() throws Exception {
+        // Arrange
+        String message = "Event not found with ID: %s: ".formatted(TEST_ID);
+        when(eventService.getEventById(TEST_ID)).thenThrow(new NotFoundException(message));
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest("%s/%s".formatted(BASE_URL, TEST_ID)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value(message));
+
+        // Verify
+        verify(eventService, times(1)).getEventById(TEST_ID);
     }
 }
