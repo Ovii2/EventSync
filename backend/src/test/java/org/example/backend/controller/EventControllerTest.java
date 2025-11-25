@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import org.example.backend.dto.event.EventRequestDTO;
 import org.example.backend.dto.event.EventResponseDTO;
+import org.example.backend.dto.page.PageResponseDTO;
+import org.example.backend.model.Event;
 import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.TokenRepository;
 import org.example.backend.service.AuthService;
@@ -13,6 +15,9 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -22,6 +27,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -131,5 +138,59 @@ class EventControllerTest {
         // Verify
         verify(eventService, never()).createEvent(any());
         assertInstanceOf(AuthorizationDeniedException.class, thrown.getCause());
+    }
+
+    @Order(3)
+    @Test
+    @DisplayName("Get all events success")
+    void testGetAllEvents_whenEventsExists_returnsPaginatedEventResponse() throws Exception {
+        // Arrange
+        EventResponseDTO response = setupEventResponse();
+
+        PageResponseDTO<EventResponseDTO> pageResponse = PageResponseDTO.<EventResponseDTO>builder()
+                .content(List.of(response))
+                .page(0)
+                .size(10)
+                .totalElements(1L)
+                .totalPages(1)
+                .last(true)
+                .build();
+
+        when(eventService.getAllEvents(any(Pageable.class))).thenReturn(pageResponse);
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.content[0].id").value(response.getId().toString()))
+                .andExpect(jsonPath("$.content[0].title").value(response.getTitle().toString()));
+
+        // Verify
+        verify(eventService, times(1)).getAllEvents(any(Pageable.class));
+    }
+
+    @Order(4)
+    @Test
+    @DisplayName("Get all events returns empty page when no events exist")
+    void testGetAllEvents_whenNoEventsExists_returnsEmptyPageResponse() throws Exception {
+        // Arrange
+        PageResponseDTO<EventResponseDTO> pageResponse = PageResponseDTO.<EventResponseDTO>builder()
+                .content(Collections.emptyList())
+                .page(0)
+                .size(0)
+                .totalElements(0L)
+                .totalPages(1)
+                .last(true)
+                .build();
+
+        when(eventService.getAllEvents(any(Pageable.class))).thenReturn(pageResponse);
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+        // Verify
+        verify(eventService, times(1)).getAllEvents(any(Pageable.class));
     }
 }
