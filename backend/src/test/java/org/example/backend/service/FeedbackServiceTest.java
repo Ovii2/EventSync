@@ -13,6 +13,7 @@ import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.FeedbackRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -155,6 +157,57 @@ class FeedbackServiceTest {
         verify(feedbackRepository, never()).save(any(Feedback.class));
         verify(feedbackMapper, never()).toResponse(any(Feedback.class));
         verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
+    }
+
+    @Order(3)
+    @Test
+    @DisplayName("Can get event summary")
+    void testGetEventFeedbackSummaryById_whenFeedbackExists_returnsFeedbackSummaryResponse() {
+        // Arrange
+        Event event = setupEvent();
+
+        when(eventRepository.findById(TEST_EVENT_ID)).thenReturn(Optional.of(event));
+        when(feedbackRepository.countByEventAndSentimentType(event, SentimentType.NEUTRAL)).thenReturn(1L);
+        when(feedbackRepository.countByEventAndSentimentType(event, SentimentType.POSITIVE)).thenReturn(1L);
+        when(feedbackRepository.countByEventAndSentimentType(event, SentimentType.NEGATIVE)).thenReturn(1L);
+        when(feedbackRepository.countByEvent(event)).thenReturn(3L);
+
+        // Act
+        var summary = feedbackService.getEventFeedbackSummaryById(TEST_EVENT_ID);
+
+        // Assert
+        assertNotNull(summary.getEventId());
+        assertEquals(TEST_EVENT_ID, summary.getEventId());
+        assertEquals(1L, summary.getPositiveCount());
+        assertEquals(1L, summary.getNeutralCount());
+        assertEquals(1L, summary.getNegativeCount());
+        assertEquals(3L, summary.getTotalFeedbackCount());
+
+        // Verify
+        verify(feedbackRepository, times(1)).countByEventAndSentimentType(event, SentimentType.NEUTRAL);
+        verify(feedbackRepository, times(1)).countByEventAndSentimentType(event, SentimentType.POSITIVE);
+        verify(feedbackRepository, times(1)).countByEventAndSentimentType(event, SentimentType.NEGATIVE);
+        verify(feedbackRepository, times(1)).countByEvent(event);
+    }
+
+    @Order(4)
+    @Test
+    @DisplayName("Get summary fails, event does not exist")
+    void testGetEventFeedbackSummaryById_whenFeedbackDoesNotExist_throwsNotFoundException() {
+        // Arrange
+        when(eventRepository.findById(TEST_EVENT_ID)).thenReturn(Optional.empty());
+
+        // Act
+        var thrown = assertThrows(NotFoundException.class, () -> feedbackService.getEventFeedbackSummaryById(TEST_EVENT_ID));
+
+        // Assert
+        assertNotNull(thrown);
+
+        // Verify
+        verify(feedbackRepository, never()).countByEventAndSentimentType(any(Event.class), eq(SentimentType.NEUTRAL));
+        verify(feedbackRepository, never()).countByEventAndSentimentType(any(Event.class), eq(SentimentType.POSITIVE));
+        verify(feedbackRepository, never()).countByEventAndSentimentType(any(Event.class), eq(SentimentType.NEGATIVE));
+        verify(feedbackRepository, never()).countByEvent(any(Event.class));
     }
 
 }
