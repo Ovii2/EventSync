@@ -253,4 +253,41 @@ class FeedbackServiceTest {
         verify(feedbackRepository, never()).findAllByEventOrderByCreatedAtDesc(any(Event.class));
     }
 
+    @Order(6)
+    @Test
+    @DisplayName("Can get event")
+    void testCheckIfEventExists_whenEventExists_returnsEvent() {
+        // Arrange
+        Event event = setupEvent();
+        when(eventRepository.findById(TEST_EVENT_ID)).thenReturn(Optional.of(event));
+
+        // Act
+        Event result = feedbackService.checkIfEventExists(TEST_EVENT_ID);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(TEST_EVENT_ID, result.getId());
+        assertSame(event, result);
+
+        // Verify
+        verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
+    }
+
+    @Order(7)
+    @Test
+    @DisplayName("Can't get event, no event found")
+    void testCheckIfEventExists_whenEventDoesNotExist_throwsNotFoundException() {
+        // Arrange
+        when(eventRepository.findById(TEST_EVENT_ID)).thenReturn(Optional.empty());
+
+        // Act
+        var thrown = assertThrows(NotFoundException.class, () -> feedbackService.checkIfEventExists(TEST_EVENT_ID));
+
+        // Assert
+        assertNotNull(thrown);
+
+        // Verify
+        verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
+    }
+
 }
