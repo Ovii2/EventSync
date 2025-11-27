@@ -98,7 +98,7 @@ public class FeedbackService {
                 messagingTemplate.convertAndSend("/topic/feedback-updates", feedbackMapper.toResponse(feedback));
 
             } catch (Exception e) {
-                log.error("Async sentiment analysis failed for feedback ID {}: {}", feedback.getId(), e.getMessage(), e);
+                log.error("Async sentiment analysis failed for feedback ID {}: {}", feedback.getId(), e.getMessage());
             }
         });
     }
