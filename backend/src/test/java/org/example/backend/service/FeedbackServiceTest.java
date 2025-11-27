@@ -13,7 +13,6 @@ import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.FeedbackRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -24,9 +23,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -78,7 +79,7 @@ class FeedbackServiceTest {
         return Feedback.builder()
                 .id(UUID.randomUUID())
                 .content(TEST_CONTENT)
-                .sentimentType(SentimentType.POSITIVE)
+                .sentimentType(SentimentType.PENDING)
                 .event(setupEvent())
                 .build();
     }
@@ -234,7 +235,7 @@ class FeedbackServiceTest {
         verify(feedbackRepository, times(1)).findAllByEventOrderByCreatedAtDesc(event);
     }
 
-    @Order(5)
+    @Order(6)
     @Test
     @DisplayName("Get feedback fails, event does not exist")
     void testGetFeedbackByEventId_whenEventIsNotFound_throwsNotFoundException() {
@@ -253,7 +254,7 @@ class FeedbackServiceTest {
         verify(feedbackRepository, never()).findAllByEventOrderByCreatedAtDesc(any(Event.class));
     }
 
-    @Order(6)
+    @Order(7)
     @Test
     @DisplayName("Can get event")
     void testCheckIfEventExists_whenEventExists_returnsEvent() {
@@ -273,7 +274,7 @@ class FeedbackServiceTest {
         verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
     }
 
-    @Order(7)
+    @Order(8)
     @Test
     @DisplayName("Can't get event, no event found")
     void testCheckIfEventExists_whenEventDoesNotExist_throwsNotFoundException() {
@@ -290,4 +291,45 @@ class FeedbackServiceTest {
         verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
     }
 
+    @Order(9)
+    @Test
+    @DisplayName("Test and analyze sentiment success")
+    void testAnalyzeAndUpdateSentimentAsync_whenSentimentSucceeds_updatesFeedbackAndBroadcasts() {
+        // Arrange
+        Feedback feedback = setupFeedback();
+        FeedbackResponseDTO response = setupFeedbackResponse();
+
+        when(aiService.analyzeSentiment(feedback.getContent())).thenReturn(CompletableFuture.completedFuture(SentimentType.POSITIVE));
+        when(feedbackMapper.toResponse(feedback)).thenReturn(response);
+
+        // Act
+        feedbackService.analyzeAndUpdateSentimentAsync(feedback);
+
+        // Assert & Verify
+        await().untilAsserted(() -> {
+            assertEquals(SentimentType.POSITIVE, feedback.getSentimentType());
+            verify(feedbackRepository, times(1)).save(feedback);
+            verify(messagingTemplate, times(1)).convertAndSend("/topic/feedback-updates", response);
+        });
+    }
+
+    @Order(10)
+    @Test
+    @DisplayName("Test and analyze sentiment fails")
+    void testAnalyzeAndUpdateSentimentAsync_whenSentimentFails_doesNotThrowAndSkipsBroadcast() {
+        // Arrange
+        Feedback feedback = setupFeedback();
+        when(aiService.analyzeSentiment(anyString())).thenReturn(CompletableFuture.failedFuture(new RuntimeException("ex")));
+
+        // Act
+        feedbackService.analyzeAndUpdateSentimentAsync(feedback);
+        await().untilAsserted(() -> verify(aiService, atLeastOnce()).analyzeSentiment(anyString()));
+
+        // Assert
+        assertEquals(SentimentType.PENDING, feedback.getSentimentType());
+
+        // Verify
+        verify(feedbackRepository, never()).save(any(Feedback.class));
+        verify(messagingTemplate, never()).convertAndSend(eq("/topic/feedback-updates"), any(Object.class));
+    }
 }
