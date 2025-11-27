@@ -210,4 +210,47 @@ class FeedbackServiceTest {
         verify(feedbackRepository, never()).countByEvent(any(Event.class));
     }
 
+    @Order(5)
+    @Test
+    @DisplayName("Can get list of feedbacks by id")
+    void testGetFeedbackByEventId_whenEventsArePresent_returnListOfFeedbackResponse() {
+        // Arrange
+        Event event = setupEvent();
+
+        when(eventRepository.findById(TEST_EVENT_ID)).thenReturn(Optional.of(event));
+        when(feedbackRepository.findAllByEventOrderByCreatedAtDesc(event)).thenReturn(List.of(setupFeedback(), setupFeedback()));
+        when(feedbackMapper.toResponse(any(Feedback.class))).thenReturn(setupFeedbackResponse());
+
+        // Act
+        var feedbackList = feedbackService.getFeedbackByEventId(TEST_EVENT_ID);
+
+        // Assert
+        assertNotNull(feedbackList.getFirst());
+        assertEquals(2, feedbackList.size());
+        assertEquals(TEST_CONTENT, feedbackList.getFirst().getContent());
+
+        // Verify
+        verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
+        verify(feedbackRepository, times(1)).findAllByEventOrderByCreatedAtDesc(event);
+    }
+
+    @Order(5)
+    @Test
+    @DisplayName("Get feedback fails, event does not exist")
+    void testGetFeedbackByEventId_whenEventIsNotFound_throwsNotFoundException() {
+        // Arrange
+        when(eventRepository.findById(TEST_EVENT_ID)).thenReturn(Optional.empty());
+
+        // Act
+        var thrown = assertThrows(NotFoundException.class, () -> feedbackService.getFeedbackByEventId(TEST_EVENT_ID));
+
+        // Assert
+        assertNotNull(thrown);
+
+        // Verify
+        verify(feedbackMapper, never()).toResponse(any(Feedback.class));
+        verify(eventRepository, times(1)).findById(TEST_EVENT_ID);
+        verify(feedbackRepository, never()).findAllByEventOrderByCreatedAtDesc(any(Event.class));
+    }
+
 }
