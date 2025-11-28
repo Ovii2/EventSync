@@ -2,10 +2,13 @@ package org.example.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
+import org.example.backend.config.CorsConfig;
+import org.example.backend.config.SecurityConfig;
 import org.example.backend.dto.event.EventRequestDTO;
 import org.example.backend.dto.event.EventResponseDTO;
 import org.example.backend.dto.page.PageResponseDTO;
 import org.example.backend.exception.NotFoundException;
+import org.example.backend.filter.JwtAuthenticationFilter;
 import org.example.backend.repository.EventRepository;
 import org.example.backend.repository.TokenRepository;
 import org.example.backend.service.AuthService;
@@ -15,8 +18,11 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = EventController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(SecurityConfig.class)
 class EventControllerTest {
 
     @Autowired
@@ -59,6 +66,16 @@ class EventControllerTest {
 
     @MockitoBean
     private TokenRepository tokenRepository;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    private AuthenticationProvider authenticationProvider;
+
+    @MockitoBean
+    private CorsConfig corsConfig;
+
 
     private static final String TEST_TITLE = "Test title";
     private static final String TEST_DESCRIPTION = "Test description";
