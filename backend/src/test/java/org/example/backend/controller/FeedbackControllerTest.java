@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -161,6 +162,7 @@ class FeedbackControllerTest {
     void testGetEventFeedbackSummaryById_whenSummaryIdDoesNotExist_returnsNotFound() throws Exception {
         // Arrange
         UUID invalidId = UUID.randomUUID();
+
         when(feedbackService.getEventFeedbackSummaryById(invalidId)).thenThrow(new NotFoundException("ex"));
 
         // Act & Assert
@@ -171,4 +173,42 @@ class FeedbackControllerTest {
         verify(feedbackService, times(1)).getEventFeedbackSummaryById(invalidId);
     }
 
+    @Order(5)
+    @Test
+    @DisplayName("Can get feedback by event id")
+    void testGetFeedbackByEventId_whenEventExists_returnsCorrectStatusAndResponseBody() throws Exception {
+        // Arrange
+        FeedbackResponseDTO response1 = setupFeedbackResponse();
+        FeedbackResponseDTO response2 = setupFeedbackResponse();
+        List<FeedbackResponseDTO> responseList = List.of(response1, response2);
+
+        when(feedbackService.getFeedbackByEventId(TEST_EVENT_ID)).thenReturn(responseList);
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest("%s/%s/feedback".formatted(BASE_URL, TEST_EVENT_ID)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].content").value(responseList.getFirst().getContent()))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(responseList.size()));
+
+        // Verify
+        verify(feedbackService, times(1)).getFeedbackByEventId(TEST_EVENT_ID);
+    }
+
+    @Order(6)
+    @Test
+    @DisplayName("Get feedback by event id fails, event does not exist")
+    void testGetFeedbackByEventId_whenEventDoesNotExist_throwsNotFoundException() throws Exception {
+        // Arrange
+        UUID invalidId = UUID.randomUUID();
+
+        when(feedbackService.getFeedbackByEventId(invalidId)).thenThrow(new NotFoundException("ex"));
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest("%s/%s/feedback".formatted(BASE_URL, invalidId)))
+                .andExpect(status().isNotFound());
+
+        // Verify
+        verify(feedbackService, times(1)).getFeedbackByEventId(invalidId);
+    }
 }
