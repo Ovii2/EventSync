@@ -3,7 +3,9 @@ package org.example.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.backend.dto.feedback.FeedbackRequestDTO;
 import org.example.backend.dto.feedback.FeedbackResponseDTO;
+import org.example.backend.dto.summary.FeedbackSummaryResponseDTO;
 import org.example.backend.enums.SentimentType;
+import org.example.backend.exception.NotFoundException;
 import org.example.backend.filter.JwtAuthenticationFilter;
 import org.example.backend.repository.TokenRepository;
 import org.example.backend.service.AuthService;
@@ -22,8 +24,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -55,7 +55,7 @@ class FeedbackControllerTest {
 
     private static final String TEST_CONTENT = "valid-content";
     private static final UUID TEST_EVENT_ID = UUID.randomUUID();
-    private static final String BASE_URL = "/api/v1/events/%s".formatted(TEST_EVENT_ID);
+    private static final String BASE_URL = "/api/v1/events";
 
     FeedbackRequestDTO setupFeedbackRequest() {
         return FeedbackRequestDTO.builder()
@@ -97,7 +97,7 @@ class FeedbackControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         // Act & Assert
-        mockMvc.perform(setupPostRequest(BASE_URL + "/feedback").content(json))
+        mockMvc.perform(setupPostRequest("%s/%s/feedback".formatted(BASE_URL, TEST_EVENT_ID)).content(json))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(response.getId().toString()))
@@ -119,11 +119,56 @@ class FeedbackControllerTest {
         String json = objectMapper.writeValueAsString(request);
 
         // Act & Assert
-        mockMvc.perform(setupPostRequest(BASE_URL + "/feedback").content(json))
+        mockMvc.perform(setupPostRequest("%s/%s/feedback".formatted(BASE_URL, TEST_EVENT_ID)).content(json))
                 .andExpect(status().isBadRequest());
 
         // Verify
         verify(feedbackService, never()).submitFeedback(eq(TEST_EVENT_ID), any(FeedbackRequestDTO.class));
+    }
+
+    @Order(3)
+    @Test
+    @DisplayName("Can get event feedback by summary id")
+    void testGetEventFeedbackSummaryById_whenSummaryIdIsProvided_returnsCorrectStatusAndResponseBody() throws Exception {
+        // Arrange
+        FeedbackSummaryResponseDTO response = FeedbackSummaryResponseDTO.builder()
+                .eventId(TEST_EVENT_ID)
+                .totalFeedbackCount(3L)
+                .positiveCount(1L)
+                .neutralCount(1L)
+                .negativeCount(1L)
+                .build();
+
+        when(feedbackService.getEventFeedbackSummaryById(TEST_EVENT_ID)).thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest("%s/%s/summary".formatted(BASE_URL, TEST_EVENT_ID)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.eventId").value(response.getEventId().toString()))
+                .andExpect(jsonPath("$.totalFeedbackCount").value(response.getTotalFeedbackCount().intValue()))
+                .andExpect(jsonPath("$.positiveCount").value(response.getPositiveCount().intValue()))
+                .andExpect(jsonPath("$.neutralCount").value(response.getNeutralCount().intValue()))
+                .andExpect(jsonPath("$.negativeCount").value(response.getNegativeCount().intValue()));
+
+        // Verify
+        verify(feedbackService, times(1)).getEventFeedbackSummaryById(TEST_EVENT_ID);
+    }
+
+    @Order(4)
+    @Test
+    @DisplayName("Get feedback summary fails when event ID does not exist")
+    void testGetEventFeedbackSummaryById_whenSummaryIdDoesNotExist_returnsNotFound() throws Exception {
+        // Arrange
+        UUID invalidId = UUID.randomUUID();
+        when(feedbackService.getEventFeedbackSummaryById(invalidId)).thenThrow(new NotFoundException("ex"));
+
+        // Act & Assert
+        mockMvc.perform(setupGetRequest("%s/%s/summary".formatted(BASE_URL, invalidId)))
+                .andExpect(status().isNotFound());
+
+        // Verify
+        verify(feedbackService, times(1)).getEventFeedbackSummaryById(invalidId);
     }
 
 }
