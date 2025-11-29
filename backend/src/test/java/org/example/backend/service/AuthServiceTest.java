@@ -1,5 +1,6 @@
 package org.example.backend.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.backend.dto.login.LoginRequestDTO;
 import org.example.backend.dto.login.LoginResponseDTO;
 import org.example.backend.enums.TokenType;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -52,6 +54,9 @@ class AuthServiceTest {
     @Mock
     private Authentication authentication;
 
+    @Mock
+    private HttpServletRequest httpServletRequest;
+
     private static final String TEST_TOKEN = "valid-token";
     private static final String TEST_USERNAME = "user";
     private static final String TEST_EMAIL = "email@email.com";
@@ -82,10 +87,20 @@ class AuthServiceTest {
                 .build();
     }
 
+    Token setupToken() {
+        return Token.builder()
+                .id(UUID.randomUUID())
+                .token("token")
+                .tokenType(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
+    }
+
 
     @Order(1)
     @Test
-    @DisplayName("User can login in")
+    @DisplayName("User can login")
     void testLoginUser_whenUserExists_returnsTokenAndLoginResponse() {
         // Arrange
         LoginRequestDTO request = setupLoginRequest();
@@ -142,13 +157,7 @@ class AuthServiceTest {
         // Arrange
         LoginRequestDTO request = setupLoginRequest();
         User user = setupUser();
-        Token token = Token.builder()
-                .id(UUID.randomUUID())
-                .token("token")
-                .tokenType(TokenType.BEARER)
-                .expired(false)
-                .revoked(false)
-                .build();
+        Token token = setupToken();
         List<Token> tokens = List.of(token);
 
         when(userRepository.findUserByUsername(TEST_USERNAME)).thenReturn(Optional.of(user));
@@ -165,5 +174,78 @@ class AuthServiceTest {
         verify(userRepository, times(1)).findUserByUsername(request.getUsername());
         verifyNoInteractions(authenticationManager, jwtService);
         verifyNoMoreInteractions(tokenService);
+    }
+
+    @Order(4)
+    @Test
+    @DisplayName("User can logout")
+    void testLogout_whenUserTokenIsPresent_CorrectResponseBodyAndStatus() {
+        // Arrange
+        Token token = setupToken();
+
+        when(tokenRepository.findByToken(token.getToken())).thenReturn(Optional.of(token));
+        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer %s".formatted(token.getToken()));
+
+        // Act
+        var response = authService.logout(httpServletRequest);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Logout successful", response.getBody());
+        assertTrue(token.isExpired());
+        assertTrue(token.isRevoked());
+
+        // Verify
+        verify(tokenRepository, times(1)).findByToken(token.getToken());
+        verify(tokenRepository, times(1)).delete(token);
+        verifyNoMoreInteractions(tokenRepository);
+    }
+
+    @Order(5)
+    @Test
+    @DisplayName("Token is not found")
+    void testUserLogout_whenUserTokenIsNotFound_returnsBadRequest() {
+        // Arrange
+        Token expiredToken = Token.builder()
+                .id(UUID.randomUUID())
+                .token("expired")
+                .tokenType(TokenType.BEARER)
+                .expired(true)
+                .revoked(true)
+                .build();
+
+        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer %s".formatted(expiredToken.getToken()));
+        when(tokenRepository.findByToken("expired")).thenReturn(Optional.empty());
+
+        // Act
+        var response = authService.logout(httpServletRequest);
+
+        // Assert
+        assertEquals("Invalid JWT token", response.getBody());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        // Verify
+        verify(tokenRepository, times(1)).findByToken(expiredToken.getToken());
+        verify(tokenRepository, never()).delete(expiredToken);
+    }
+
+    @Order(6)
+    @Test
+    @DisplayName("Auth header is missing")
+    void testLogoutUser_whenMissingAuthorizationHeader_returnsBadRequest() {
+        // Arrange
+        when(httpServletRequest.getHeader("Authorization")).thenReturn(null);
+
+        // Act
+        var response = authService.logout(httpServletRequest);
+
+        // Assert
+        assertEquals("Missing or invalid Authorization header", response.getBody());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        // Verify
+        verify(tokenRepository, never()).findByToken(any());
+        verify(tokenRepository, never()).delete(any());
+
     }
 }

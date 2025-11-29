@@ -256,5 +256,4 @@ class EventServiceTest {
         verify(eventMapper, never()).toResponse(any());
         verify(feedbackRepository, never()).countByEvent(any());
     }
-
 }
