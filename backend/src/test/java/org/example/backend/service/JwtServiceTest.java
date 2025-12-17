@@ -22,7 +22,7 @@ class JwtServiceTest {
 
     private JwtService jwtService;
 
-    public static final String BASE64_KEY = "XJz8K7mQ9vR2nL4pY6tH3wE1sA5fD8gB0cN7jU9iO2k=";
+    private static final String BASE64_KEY = "XJz8K7mQ9vR2nL4pY6tH3wE1sA5fD8gB0cN7jU9iO2k=";
     private static final String TEST_USERNAME = "Test";
     private static final String TEST_EMAIL = "test@email.com";
 
@@ -148,17 +148,17 @@ class JwtServiceTest {
     }
 
     @Test
-    @DisplayName("Returns false, token is not expired")
-    void testIsTokenExpired_whenTokenIsNotExpired_returnsFalse() {
+    @DisplayName("Token validation throws exception when username doesn't match and token is expired")
+    void testIsTokenValid_whenUsernameDoesNotMatchAndTokenExpired_throwsException() {
         // Arrange
         User user = setupUser();
-        String token = jwtService.generateToken(user);
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", -1000L);
+        String expiredToken = jwtService.generateToken(user);
 
-        // Act
-        boolean isExpired = jwtService.isTokenExpired(token);
+        User otherUser = setupInvalidUser();
 
-        // Assert
-        assertFalse(isExpired);
+        // Act & Assert
+        assertThrows(ExpiredJwtException.class, () -> jwtService.isTokenValid(expiredToken, new CustomUserDetails(otherUser)));
     }
 
     @Test
@@ -171,6 +171,20 @@ class JwtServiceTest {
 
         // Act & Assert
         assertThrows(ExpiredJwtException.class, () -> jwtService.isTokenExpired(expiredToken));
+    }
+
+    @Test
+    @DisplayName("Returns false, token is not expired")
+    void testIsTokenExpired_whenTokenIsNotExpired_returnsFalse() {
+        // Arrange
+        User user = setupUser();
+        String token = jwtService.generateToken(user);
+
+        // Act
+        boolean isExpired = jwtService.isTokenExpired(token);
+
+        // Assert
+        assertFalse(isExpired);
     }
 
     @Test
